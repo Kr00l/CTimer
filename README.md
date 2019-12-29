@@ -1,5 +1,5 @@
 # CTimer
-VB CTimer class module with ITimer interface
+CTimer class module with ITimer interface
 
 This is a code-based timer object for generic use in VB6.
 
