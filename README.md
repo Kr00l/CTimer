@@ -1,7 +1,7 @@
 # CTimer
 CTimer class module with ITimer interface
 
-This is a code-based timer object for generic use in VB6.
+This is a code-based timer object for generic use in VB6 and 32-bit VBA.
 
 The timer object is interface driven and therefore don't need necessarily a VB.Form as host.
 
