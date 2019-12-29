@@ -52,10 +52,17 @@ ASM(65) = &HEB: ASM(66) = &HF0
 ASMWrapper = VirtualAlloc(ByVal 0&, 104, MEM_COMMIT, PAGE_EXECUTE_READWRITE)
 If ASMWrapper <> 0 Then
     CopyMemory ByVal ASMWrapper, ASM(0), 67
+    
+    #If VBA6 Then
+    #Else
+    
     If App.LogMode = 0 Then
         CopyMemory ByVal ASMWrapper, &H9090, 2
         Call PatchProcAddress(ASMWrapper, PATCH_EBMODE, "vba6.dll", "EbMode")
     End If
+    
+    #End If
+    
     Call PatchProcAddress(ASMWrapper, PATCH_KILLTIMER, "user32.dll", "KillTimer")
 End If
 End Sub
