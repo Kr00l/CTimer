@@ -49,13 +49,16 @@ ASM(50) = &H1C: ASM(51) = &HC2: ASM(52) = &H10: ASM(53) = &H0: ASM(54) = &H8B
 ASM(55) = &H4C: ASM(56) = &H24: ASM(57) = &HC: ASM(58) = &H51: ASM(59) = &H50
 ASM(60) = &HE8: ASM(61) = &H0: ASM(62) = &H0: ASM(63) = &H0: ASM(64) = &H0
 ASM(65) = &HEB: ASM(66) = &HF0
-ASMWrapper = VirtualAlloc(ByVal 0&, 104, MEM_COMMIT, PAGE_EXECUTE_READWRITE)
+ASMWrapper = VirtualAlloc(ByVal 0&, 67, MEM_COMMIT, PAGE_EXECUTE_READWRITE)
 If ASMWrapper <> 0 Then
     CopyMemory ByVal ASMWrapper, ASM(0), 67
     If InIDE() = True Then
-        If PatchProcAddress(ASMWrapper, PATCH_EBMODE, "vba6.dll", "EbMode") = True Then CopyMemory ByVal ASMWrapper, &H9090, 2
+        If GetModuleHandle(StrPtr("vb6.exe")) = &H400000 Then
+            Call PatchProcAddress(ASMWrapper, PATCH_EBMODE, "vba6.dll", "EbMode")
+            CopyMemory ByVal ASMWrapper, &H9090, 2
+        End If
     End If
-    PatchProcAddress ASMWrapper, PATCH_KILLTIMER, "user32.dll", "KillTimer"
+    Call PatchProcAddress(ASMWrapper, PATCH_KILLTIMER, "user32.dll", "KillTimer")
 End If
 End Sub
 
@@ -117,14 +120,11 @@ KillTimer 0, PropID
 PropID = 0
 End Sub
 
-Private Function PatchProcAddress(ByVal ASMWrapper As Long, ByVal Offset As Long, ByVal LibName As String, ByVal ProcName As String) As Boolean
+Private Sub PatchProcAddress(ByVal ASMWrapper As Long, ByVal Offset As Long, ByVal LibName As String, ByVal ProcName As String)
 Dim ProcAddress As Long
 ProcAddress = GetProcAddress(GetModuleHandle(StrPtr(LibName)), ProcName)
-If ProcAddress <> 0 Then
-    MemOffset32(ASMWrapper, Offset) = UnsignedAdd(ProcAddress, -UnsignedAdd(ASMWrapper, Offset) - 4)
-    PatchProcAddress = True
-End If
-End Function
+If ProcAddress <> 0 Then MemOffset32(ASMWrapper, Offset) = UnsignedAdd(ProcAddress, -UnsignedAdd(ASMWrapper, Offset) - 4)
+End Sub
 
 Private Property Get MemOffset32(ByVal Start As Long, ByVal Offset As Long) As Long
 CopyMemory MemOffset32, ByVal UnsignedAdd(Start, Offset), 4
