@@ -55,7 +55,7 @@ If ASMWrapper <> 0 Then
     If InIDE() = True Then
         If PatchProcAddress(ASMWrapper, PATCH_EBMODE, "vba6.dll", "EbMode") = True Then CopyMemory ByVal ASMWrapper, &H9090, 2
     End If
-    Call PatchProcAddress(ASMWrapper, PATCH_KILLTIMER, "user32.dll", "KillTimer")
+    PatchProcAddress ASMWrapper, PATCH_KILLTIMER, "user32.dll", "KillTimer"
 End If
 End Sub
 
