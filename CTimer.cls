@@ -29,7 +29,8 @@ Private Const PATCH_KEY As Long = 36
 Private Const PATCH_OBJECTPOINTER As Long = 41
 Private Const PATCH_KILLTIMER As Long = 61
 Private ASMWrapper As Long
-Private PropOwner As ITimer, PropID As Long
+Private ShadowObjectPointer As Long
+Private PropID As Long
 Private PropKey As String
 Private PropInterval As Long
 
@@ -71,7 +72,7 @@ Public Function Create(ByVal Owner As ITimer, Optional ByVal Key As String) As B
 Attribute Create.VB_Description = "Creates a new timer."
 If PropID <> 0 Then Err.Raise Number:=5, Description:="Timer already created"
 If Owner Is Nothing Then Err.Raise Number:=380, Description:="Required argument is missing"
-Set PropOwner = Owner
+ShadowObjectPointer = ObjPtr(Owner)
 PropKey = Key
 Call CreateTimer
 Create = CBool(PropID <> 0)
@@ -81,7 +82,7 @@ Public Function Terminate() As Boolean
 Attribute Terminate.VB_Description = "Terminates the current timer."
 If PropID = 0 Then Err.Raise Number:=5, Description:="Timer must be created before it can be used"
 Call DestroyTimer
-Set PropOwner = Nothing
+ShadowObjectPointer = 0
 PropKey = vbNullString
 Terminate = CBool(PropID = 0)
 End Function
@@ -106,10 +107,10 @@ End Property
 
 Private Sub CreateTimer()
 If PropID <> 0 Or ASMWrapper = 0 Then Exit Sub
-If Not PropOwner Is Nothing And PropInterval > 0 Then
+If ShadowObjectPointer <> 0 And PropInterval > 0 Then
     MemOffset32(ASMWrapper, PATCH_STARTTIME) = GetTickCount()
     MemOffset32(ASMWrapper, PATCH_KEY) = StrPtr(PropKey)
-    MemOffset32(ASMWrapper, PATCH_OBJECTPOINTER) = ObjPtr(PropOwner)
+    MemOffset32(ASMWrapper, PATCH_OBJECTPOINTER) = ShadowObjectPointer
     PropID = SetTimer(0, 0, PropInterval, ASMWrapper)
 End If
 End Sub
